@@ -8,14 +8,13 @@ from ingestion.nodes.base import BaseNode
 
 
 class InitPDFNode(BaseNode):
-    def __init__(self, file_paths, language="kr", **kwargs):
+    def __init__(self, language="kr", **kwargs):
         super().__init__(**kwargs)
         self.name = self.__class__.__name__
-        self.file_paths = file_paths
         self.language = language
 
     def execute(self, state: FileState) -> FileState:
-        file_paths = self.file_paths
+        file_paths = state["file_paths"]
         original_pdf_path = file_paths["original_pdf"]
         file_basename = Path(original_pdf_path).stem
         file_type = Path(original_pdf_path).suffix[1:]
