@@ -188,6 +188,59 @@ def process_document(state):
         docs.extend(page_docs)
         hypo_docs.extend(page_hypo_docs)
 
+    md_file_path = state["file_paths"]["processed_dir"] / state["file_basename"]
+    with open(str(md_file_path)+".md", "w", encoding="utf-8") as f:
+        f.write("\n\n".join(markdowns))
+
     return {"markdowns": markdowns, 
             "docs": docs, 
             "hypo_docs": hypo_docs}
+
+
+def clean_retrieved_documents(retrieved_documents):
+    clean_docs = []
+
+    for doc in retrieved_documents:
+        metadata = doc.metadata
+        new_metadata = {}
+        content = doc.page_content
+
+        if metadata["type"] in ["page_summary", "text"]:
+            if "page" in metadata:
+                new_metadata["page"] = metadata["page"]
+            if "source" in metadata:
+                new_metadata["source"] = metadata["source"]
+            if metadata["type"] == "text":
+                new_metadata["summary"] = metadata["summary"]
+            clean_docs.append(Document(page_content=content, metadata=new_metadata))
+
+        elif metadata["type"] == "image":
+            image_path = metadata["image"]
+            if "page" in metadata:
+                new_metadata["page"] = metadata["page"]
+            if "source" in metadata:
+                new_metadata["source"] = metadata["source"]
+            content = convert_to_markdown_table(content)
+
+            clean_docs.append(Document(page_content=content, metadata=new_metadata))
+
+        elif metadata["type"] == "table":
+            table_path = metadata["table"]
+            table_markdown = metadata["markdown"]
+            if "page" in metadata:
+                new_metadata["page"] = metadata["page"]
+            if "source" in metadata:
+                new_metadata["source"] = metadata["source"]
+            content = f"{convert_to_markdown_table(content)}\n\n{table_markdown}"
+
+            clean_docs.append(Document(page_content=content, metadata=new_metadata))
+
+        elif metadata["type"] == "hypothetical_questions":
+            content = metadata["summary"]
+            if "page" in metadata:
+                new_metadata["page"] = metadata["page"]
+            if "source" in metadata:
+                new_metadata["source"] = metadata["source"]
+            clean_docs.append(Document(page_content=content, metadata=new_metadata))
+
+    return clean_docs
