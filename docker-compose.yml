@@ -10,7 +10,7 @@ services:
       - .env
     develop:
       watch:
-        - path: src/service/apis/
+        - path: service/apis/
           action: sync+restart
           target: /app/apis/
 
@@ -26,6 +26,6 @@ services:
       - AGENT_URL=http://agent_service
     develop:
       watch:
-        - path: src/service/run_streamlit.py
+        - path: service/run_streamlit.py
           action: sync+restart
           target: /app/run_streamlit.py
